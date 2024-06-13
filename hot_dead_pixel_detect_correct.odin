@@ -55,10 +55,9 @@ import "core:strings"
 import "core:math"
 import "core:os"
 import "core:slice"
+import "core:math/rand"
 
 import img "vendor:stb/image"
-
-import "core:math/rand"
 
 NUM_CHANNELS : i32 = 3
 
@@ -77,10 +76,10 @@ Img_Type :: enum {
 
 // Internal color
 RGBA :: struct #packed {
-    r    : u8,
-    g    : u8,
-    b    : u8,
-    a    : u8,
+    r : u8,
+    g : u8,
+    b : u8,
+    a : u8,
 }
 
 // Represents one plot.
@@ -217,7 +216,7 @@ image_save :: proc ( image: ^Image, with_name : ^string = nil ) {
                         image.size_x,
                         image.size_y,
                         image.components,                        // 4 components: RGBA
-                        rawptr( & ( image^.img_buffer[ 0 ] ) ),  // &data[0],
+                        rawptr( & ( image^.img_buffer[ 0 ] ) ),
                         stride )  // in bytes
 
         case Img_Type.JPG:
@@ -226,10 +225,8 @@ image_save :: proc ( image: ^Image, with_name : ^string = nil ) {
                         image.size_x,
                         image.size_y,
                         image.components,                        // 4 components: RGBA
-                        rawptr( & ( image^.img_buffer[ 0 ] ) ),  // &data[0],
+                        rawptr( & ( image^.img_buffer[ 0 ] ) ),
                         0 )   // No compression
-
-                        // stride )
 
         case Img_Type.BMP:
             ret = img.write_bmp( 
@@ -237,8 +234,7 @@ image_save :: proc ( image: ^Image, with_name : ^string = nil ) {
                         image.size_x,
                         image.size_y,
                         image.components,                        // 4 components: RGBA
-                        rawptr( & ( image^.img_buffer[ 0 ] ) ),  // &data[0],
-                        // stride
+                        rawptr( & ( image^.img_buffer[ 0 ] ) ),
                         )
 
         case Img_Type.TGA:
@@ -247,8 +243,7 @@ image_save :: proc ( image: ^Image, with_name : ^string = nil ) {
                         image.size_x,
                         image.size_y,
                         image.components,                   // 4 components: RGBA
-                        rawptr( & ( image^.img_buffer[ 0 ] ) ),  // &data[0],
-                        // stride
+                        rawptr( & ( image^.img_buffer[ 0 ] ) ),
                         )
 
         case Img_Type.GIF:
@@ -332,11 +327,9 @@ image_get_pixel :: #force_inline proc ( image : ^Image, x : i32, y : i32 ) ->
     g = image^.img_buffer[ index + 1 ]
     b = image^.img_buffer[ index + 2 ]    
     return r, g, b
-    // return image^.img_buffer[ x * image.size_y + y ]
 }
 
 image_set_pixel :: #force_inline proc ( image : ^Image, x : i32, y : i32, r : u8, g: u8, b: u8 ) {
-    // fmt.printfln( "set_pixel -> x : %d, y : %d", x, y )
 
     // img_buffer := image^.img_buffer
     index := 3 * ( y * image.size_x + x )
@@ -348,8 +341,6 @@ image_set_pixel :: #force_inline proc ( image : ^Image, x : i32, y : i32, r : u8
 add_random_hot_and_dead_pixels :: proc ( image : ^Image, hot_num : int, dead_num : int ) ->
                                          Pixels_With_Problems {
     // Add random hot and dead pixels to the image.
-    // For now, just copy the image.
-
 
     seed : u64 = 42
     rand_gen := rand.create( seed )
@@ -401,24 +392,24 @@ kernel := [?]Coord { Coord{ -1 , -1 }, Coord{ 0 , -1 }, Coord{ 1 , -1 },
 // Kerneis for the borders.
 
 kernel_up := [?]Coord { /* Coord{ -1 , -1 }, Coord{ 0 , -1 }, Coord{ 1 , -1 }, */
-                        Coord{ -1 ,  0 },                  Coord{ 1 ,  0 },
-                        Coord{ -1 ,  1 }, Coord{ 0 ,  1 }, Coord{ 1 , -1 } }
+                           Coord{ -1 ,  0 },                  Coord{ 1 ,  0 },
+                           Coord{ -1 ,  1 }, Coord{ 0 ,  1 }, Coord{ 1 , -1 } }
 
 kernel_down := [?]Coord { Coord{ -1 , -1 }, Coord{ 0 , -1 }, Coord{ 1 , -1 },
-                        Coord{ -1 ,  0 },                  Coord{ 1 ,  0 } /*,
-                        Coord{ -1 ,  1 }, Coord{ 0 ,  1 }, Coord{ 1 , -1 } */ }
+                          Coord{ -1 ,  0 },                  Coord{ 1 ,  0 } /*,
+                          Coord{ -1 ,  1 }, Coord{ 0 ,  1 }, Coord{ 1 , -1 } */ }
 
 kernel_left := [?]Coord { /* Coord{ -1 , -1 }, */  Coord{ 0 , -1 }, Coord{ 1 , -1 },
-                          /* Coord{ -1 ,  0 }, */                  Coord{ 1 ,  0 },
-                          /* Coord{ -1 ,  1 }, */ Coord{ 0 ,  1 }, Coord{ 1 , -1 } }
+                          /* Coord{ -1 ,  0 }, */                   Coord{ 1 ,  0 },
+                          /* Coord{ -1 ,  1 }, */  Coord{ 0 ,  1 }, Coord{ 1 , -1 } }
 
-kernel_right := [?]Coord { Coord{ -1 , -1 }, Coord{ 0 , -1 }, /* Coord{ 1 , -1 }, */
-                     Coord{ -1 ,  0 },                  /* Coord{ 1 ,  0 }, */
-                     Coord{ -1 ,  1 }, Coord{ 0 ,  1 }  /*, Coord{ 1 , -1 } */ }
+kernel_right := [?]Coord { Coord{ -1 , -1 }, Coord{ 0 , -1 }, /*  Coord{ 1 , -1 }, */
+                           Coord{ -1 ,  0 },                  /*  Coord{ 1 ,  0 }, */
+                           Coord{ -1 ,  1 }, Coord{ 0 ,  1 }  /*, Coord{ 1 , -1 }  */ }
      
 
 apply_kernel :: #force_inline proc ( image : ^Image, x : i32, y : i32, kernel : []Coord ) ->
-                                   ( m_r,     m_g,   m_b : u8,
+                                   (   m_r,   m_g,   m_b : u8,
                                      min_r, min_g, min_b : u8,
                                      max_r, max_g, max_b : u8 ) {
     // Apply the kernel to the image.
@@ -449,13 +440,13 @@ apply_kernel :: #force_inline proc ( image : ^Image, x : i32, y : i32, kernel : 
         g += int( g1 )
         b += int( b1 )
 
-        if r1 < min_r do min_r = r1
-        if g1 < min_g do min_g = g1
-        if b1 < min_b do min_b = b1
+        min_r = min( min_r, r1 )
+        min_g = min( min_g, g1 )
+        min_b = min( min_b, b1 )
 
-        if r1 > max_r do max_r = r1
-        if g1 > max_g do max_g = g1
-        if b1 > max_b do max_b = b1
+        max_r = max( max_r, r1 )
+        max_g = max( max_g, g1 )
+        max_b = max( max_b, b1 )
         
         count += 1
     }
@@ -464,7 +455,7 @@ apply_kernel :: #force_inline proc ( image : ^Image, x : i32, y : i32, kernel : 
     m_g = u8( g / count )
     m_b = u8( b / count )
 
-    return m_r,     m_g,   m_b,
+    return   m_r,   m_g,   m_b,
            min_r, min_g, min_b,
            max_r, max_g, max_b
 }
@@ -713,8 +704,7 @@ image_correct_hot_dead_pixels :: proc ( image : ^Image, pixels_with_problems_det
 
 image_process :: proc ( image : ^Image, pixels_with_problems : Pixels_With_Problems ) {
     // Process the image.
-    // For now, just copy the image.
-     
+   
     pixels_with_problems_detected := image_detect_hot_dead_pixels( image )
 
     fmt.printfln( "\nPixels with problems detected...\n" +
@@ -731,9 +721,6 @@ image_process :: proc ( image : ^Image, pixels_with_problems : Pixels_With_Probl
     pixeis_print( image, pixels_with_problems_not_found )
 
     image_correct_hot_dead_pixels( image, pixels_with_problems_detected )
-
-    // Compare the pixels_with_problems with pixels_with_problem_detected.
-    // TODO: 
 }
 
 main :: proc ( ) {
